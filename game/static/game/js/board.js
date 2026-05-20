@@ -250,14 +250,17 @@
             }
 
             async function post(url, body) {
-                return (await fetch(url, {
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrf()
                     },
                     body: JSON.stringify(body)
-                })).json();
+                });
+                const data = await res.json();
+                data._status = res.status;
+                return data;
             }
 
             function isAITurn() {
@@ -946,7 +949,7 @@
                             }
                             if (a11yMsg) announceMove(a11yMsg);
                         }
-                    } else if (data.message === 'AI engine unavailable.') {
+                    } else if (data._status === 503 || data.message === 'AI engine unavailable.') {
                         // 503 from backend — engine is down, stop retrying completely
                         showStatus('AI unavailable. Please start a new game.', true);
                         gameOver = true;
